@@ -52,8 +52,8 @@ rm -rf usr/share/bash-completion
 # No zsh, no need for comletions
 rm -rf usr/share/zsh/vendor-completions
 
-# drop gcc-5 python helpers
-rm -rf usr/share/gcc-5
+# drop gcc-6 python helpers
+rm -rf usr/share/gcc-6
 
 # Drop sysvinit leftovers
 rm -rf etc/init.d
