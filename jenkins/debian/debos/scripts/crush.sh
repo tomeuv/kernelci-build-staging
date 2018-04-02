@@ -40,6 +40,10 @@ COLUMNS=300 dpkg -l
 # Drop dpkg
 dpkg --purge --force-remove-essential --force-depends  dpkg
 
+# No apt or dpkg, no need for its configuration archives
+rm -rf etc/apt
+rm -rf etc/dpkg
+
 # Drop directories not part of ostree
 # Note that /var needs to exist as ostree bind mounts the deployment /var over
 # it
