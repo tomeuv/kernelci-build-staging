@@ -5,8 +5,14 @@
 
 set -e
 
+# Copy timezone file and remove tzdata package
+rm -rf /etc/localtime
+cp /usr/share/zoneinfo/Etc/UTC /etc/localtime
 
-UNNEEDED_PACKAGES=" libfdisk1"
+
+UNNEEDED_PACKAGES=" libfdisk1"\
+" tzdata"\
+
 
 # Removing unused packages
 for PACKAGE in ${UNNEEDED_PACKAGES}
@@ -23,11 +29,10 @@ apt-get autoremove --yes || true
 # Removing unused files
 find . -name *~ -print0 | xargs -0 rm -f
 
-
 # Dropping logs
 rm -rf /var/log/*
 
-# documentation & timezone information
+# documentation, localization, i18n files, etc
 rm -rf /usr/share/doc/*
 rm -rf /usr/share/locale/*
 rm -rf /usr/share/man
@@ -35,7 +40,6 @@ rm -rf /usr/share/i18n/*
 rm -rf /usr/share/info/*
 rm -rf /usr/share/lintian/*
 rm -rf /usr/share/linda/*
-rm -rf /usr/share/zoneinfo/*
 rm -rf /usr/share/common-licenses/*
 rm -rf /usr/share/mime/*
 
