@@ -70,7 +70,7 @@ rm -rf usr/lib/xtables
 rm -rf usr/lib/locale/*
 
 # configuration helpers
-rm -f usr/sbin/visudo usr/sbin/useradd usr/sbin/usermod usr/sbin/chpasswd
+rm -f usr/sbin/visudo
 
 # partition helpers
 rm usr/sbin/*fdisk
