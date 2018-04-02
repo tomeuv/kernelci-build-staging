@@ -66,6 +66,7 @@ rm -rf etc/init
 rm -rf usr/lib/xtables
 
 # Drop all locales
+# TODO: only remaining locale is actually "C". Should we really remove it?
 rm -rf usr/lib/locale/*
 
 # configuration helpers
