@@ -39,11 +39,8 @@ rm -rf /usr/share/man
 rm -rf /usr/share/i18n/*
 rm -rf /usr/share/info/*
 rm -rf /usr/share/lintian/*
-rm -rf /usr/share/linda/*
 rm -rf /usr/share/common-licenses/*
 rm -rf /usr/share/mime/*
-
-rm -rf /var/cache/man/*
 
 # Drop udev hwdb not required on a stripped system
 rm -f /lib/udev/hwdb.bin /lib/udev/hwdb.d/*
