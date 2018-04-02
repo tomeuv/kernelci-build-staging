@@ -146,3 +146,9 @@ rm usr/bin/systemd-mount
 rm usr/bin/systemd-path
 rm usr/bin/systemd-run
 rm usr/bin/systemd-socket-activate
+
+# Remove pam module to authenticate against a DB
+# plus libdb-5.3.so that is only used by this pam module
+rm usr/lib/*/security/pam_userdb.so
+rm usr/lib/*/libdb-5.3.so
+
