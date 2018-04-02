@@ -21,6 +21,8 @@ UNNEEDED_PACKAGES="apt libapt-pkg5.0 "\
 "gpgv "\
 "hostname "\
 "adduser "\
+"debian-archive-keyring "\
+
 
 # Removing unused packages
 for PACKAGE in ${UNNEEDED_PACKAGES}
