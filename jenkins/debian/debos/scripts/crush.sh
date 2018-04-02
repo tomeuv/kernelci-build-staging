@@ -4,63 +4,23 @@ set -ve
 # Crush into a minimal production image to be deployed via some type of image
 # updating system. The Debian system is not longer functional at this point.
 
-UNNEEDED_PACKAGES="openssl "\
-"apt apt-transport-https libapt-pkg5.0 "\
-"ncurses-bin ncurses-base "\
+UNNEEDED_PACKAGES="apt libapt-pkg5.0 "\
+"ncurses-bin ncurses-base libncursesw5 libncurses5 "\
 "perl-base "\
-"adduser "\
-"debconf "\
-"sysv-rc "\
-"dracut dracut-core "\
-"ostree-boot "\
+"debconf libdebconfclient0 "\
 "e2fsprogs e2fslibs libfdisk1 libdevmapper1.02.1 "\
 "insserv "\
 "init-system-helpers "\
 "bash "\
 "cpio "\
-"apertis-archive-keyring "\
-"libdebconfclient0 "\
 "passwd "\
-"libsemanage1 "\
-"libsemanage-common "\
+"libsemanage1 libsemanage-common "\
 "libsepol1 "\
 "gzip "\
 "gnupg "\
 "gpgv "\
-"libcurl3 "\
 "hostname "\
-"openssh-client "
-
-# gnupg has a helper too that uses ldap, which drags in libldap which drags in
-# the whole kerberos stack and sasl and and.
-UNNEEDED_PACKAGES="${UNNEEDED_PACKAGES} "\
-"libldap-2.4-2 "\
-"libasn1-8-heimdal"\
-"libheimntlm0-heimdal "\
-"libheimbase1-heimdal "\
-"libroken18-heimdal "\
-"libhx509-5-heimdal "\
-"libhcrypto4-heimdal "\
-"libgssapi3-heimdal "\
-"libkrb5-26-heimdal "\
-"libsasl2-2 "\
-"libsasl2-modules-db "
-
-# The following can also be removed if openssh isn't used
-#"libgssapi-krb5-2 "\
-#"libkrb5-3 "\
-#"libkrb5support0 "\
-#"libk5crypto3 "\
-#"libkeyutils1 "\
-
-# Needed by an ostree helper only
-UNNEEDED_PACKAGES="${UNNEEDED_PACKAGES} "\
-"libfuse2 "
-
-# Drop ncurses only required for some command line utils
-UNNEEDED_PACKAGES="${UNNEEDED_PACKAGES} "\
-"libncursesw5 "\
-"libncurses5 "
+"adduser "\
 
 # Removing unused packages
 for PACKAGE in ${UNNEEDED_PACKAGES}
