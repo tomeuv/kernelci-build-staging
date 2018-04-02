@@ -5,14 +5,8 @@
 
 set -e
 
-UNNEEDED_PACKAGES="libtext-wrapi18n-perl"\
-" libtext-charwidth-perl"\
-" libtext-iconv-perl liblocale-gettext-perl"\
-" gcc-4.7-base gcc-4.8-base gcc-4.9-base"\
-" uidmap xz-utils lzma"\
-" libcurl3"\
-" libfdisk1"\
-" librtmp1"
+
+UNNEEDED_PACKAGES=" libfdisk1"
 
 # Removing unused packages
 for PACKAGE in ${UNNEEDED_PACKAGES}
