@@ -13,6 +13,7 @@ cp /usr/share/zoneinfo/Etc/UTC /etc/localtime
 UNNEEDED_PACKAGES=" libfdisk1"\
 " tzdata"\
 
+export DEBIAN_FRONTEND=noninteractive
 
 # Removing unused packages
 for PACKAGE in ${UNNEEDED_PACKAGES}
