@@ -152,3 +152,6 @@ rm usr/bin/systemd-socket-activate
 rm usr/lib/*/security/pam_userdb.so
 rm usr/lib/*/libdb-5.3.so
 
+# remove NSS support for nis, nisplus and hesiod
+rm usr/lib/*/libnss_hesiod*
+rm usr/lib/*/libnss_nis*
