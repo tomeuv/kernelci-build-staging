@@ -43,6 +43,12 @@ rm -rf /usr/share/lintian/*
 rm -rf /usr/share/common-licenses/*
 rm -rf /usr/share/mime/*
 
+# reportbug scripts
+rm -rf /usr/share/bug
+
+# we won't build any sudo plugin
+rm /usr/include/sudo_plugin.h
+
 # Drop udev hwdb not required on a stripped system
 rm -f /lib/udev/hwdb.bin /lib/udev/hwdb.d/*
 
