@@ -46,15 +46,7 @@ rm -rf /usr/share/mime/*
 # Drop udev hwdb not required on a stripped system
 rm -f /lib/udev/hwdb.bin /lib/udev/hwdb.d/*
 
-# Drop all gconv conversions apart from the more comon ISO ones and UTF8
+# Drop all gconv conversions && binaries
 rm usr/bin/iconv
 rm usr/sbin/iconvconfig
-rm usr/lib/*/gconv/lib*
-rm usr/lib/*/gconv/[A-HJ-TV-Z]*
-rm usr/lib/*/gconv/INIS*
-rm usr/lib/*/gconv/IBM*
-rm usr/lib/*/gconv/UHC*
-rm usr/lib/*/gconv/ISO-2022*
-rm usr/lib/*/gconv/UTF-7*
-rm usr/lib/*/gconv/ISO8859-[2-9]*
-rm usr/lib/*/gconv/ISO-IR*
+rm -rf usr/lib/*/gconv/
