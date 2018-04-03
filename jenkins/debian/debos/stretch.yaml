@@ -1,5 +1,6 @@
 {{- $architecture := or .architecture "arm64" -}}
 {{- $basename := or .basename "." -}}
+{{- $extra_packages := or .extra_packages "" -}}
 
 architecture: {{ $architecture }}
 
@@ -20,14 +21,11 @@ actions:
       - sudo
       - systemd-sysv
       - diffutils
-#      - python
 
-#      - openssh-server
-#      - adduser
-#      - libnss-myhostname
-#      - libnss-resolve
-
-#      - wget
+  - action: run
+    description: Install extra packages
+    chroot: true
+    command: apt-get update && apt-get -y install --no-install-recommends {{ $extra_packages }}
 
   - action: run
     description: Set hostname

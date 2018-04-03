@@ -1,53 +1,66 @@
-def transformIntoStep(String pipeline_version, String kernelci_arch, String debian_arch) {
-  return {
-    stage("Build image for ${kernelci_arch}") {
-      sh "mkdir -p ${pipeline_version}/${kernelci_arch}/"
-      sh "debos -t architecture:${debian_arch} -t basename:${pipeline_version}/${kernelci_arch}/ jenkins/debian/debos/stretch.yaml"
-    }
-  }
-}
-
 def pipeline_version = VersionNumber(versionNumberString: '${BUILD_DATE_FORMATTED,"yyyyMMdd"}.${BUILDS_TODAY_Z}')
-def kernelci_arches = ["arm64", "armel", "x86", "x86_64"]
+def kernelci_arches = ["arm64"] //, "armel", "x86", "x86_64"]
 def debian_arches = ["arm64", "armhf", "i386", "amd64"]
+def toolchain_arches = ["aarch64-linux-gnu", "arm-linux-gnueabihf", "i386-linux-gnu", "x86_64-linux-gnu"]
 
-node("docker-slave") {
-
-  stage("Checkout") {
-    checkout scm
-  }
-
-  docker.build("debian", "-f jenkins/debian/Dockerfile --pull .").inside("--device=/dev/kvm") {
-
-    stage("Build images") {
-      def stepsForParallel = [:]
-      for (int i = 0; i < kernelci_arches.size(); i++) {
-          def s = kernelci_arches.get(i)
-          def buildStep = "Build image for ${s}"
-          stepsForParallel[buildStep] = transformIntoStep(pipeline_version,
-                                                          kernelci_arches.get(i),
-                                                          debian_arches.get(i))
+def makeImageStep(String pipeline_version, String kernelci_arch, String debian_arch) {
+  return {
+    node("docker-slave") {
+      stage("Checkout") {
+        checkout scm
       }
-      parallel stepsForParallel
-    }
-  }
-/*
-  stage ("Upload images") {
-    def api = "https://staging-api.kernelci.org"
-    def publish_path = "images/rootfs/debian/${PIPELINE_VERSION}"
 
-    for (int i = 0; i < kernelci_arches.size(); i++) {
-      def arch = kernelci_arches.get(i)
-      sh "python push-source.py --token ${API_TOKEN} --api api --publish_path ${publish_path}/${arch} ${pipeline_version}/${arch}/rootfs.cpio.gz"
-    }
-  }
-*/
-  stage ("Upload images") {
-    dir ("${pipeline_version}") {
-      for (int i = 0; i < kernelci_arches.size(); i++) {
-        def s = kernelci_arches.get(i)
-        archiveArtifacts artifacts: "${s}/rootfs.cpio.gz", fingerprint: true
+      docker.build("debian", "-f jenkins/debian/Dockerfile_debos --pull .").inside("--device=/dev/kvm") {
+        stage("Build base image for ${kernelci_arch}") {
+          sh "debos -t architecture:${debian_arch} -t basename:${pipeline_version}/${kernelci_arch}/ -t extra_packages:'libpciaccess libkmod libprocps libcairo2 libunwind libudev' jenkins/debian/debos/stretch.yaml"
+          stash includes: "${pipeline_version}/${kernelci_arch}/rootfs.cpio.gz", name: 'rootfs'
+        }
       }
     }
   }
 }
+
+def makeBuildStep(String pipeline_version, String kernelci_arch, String debian_arch) {
+  return {
+    node("docker-slave") {
+      stage("Checkout") {
+        checkout scm
+      }
+
+      docker.build("debian", "-f jenkins/debian/Dockerfile_debian --pull .").inside("--device=/dev/kvm") {
+        stage("Build libdrm for ${kernelci_arch}") {
+          git url: 'git://anongit.freedesktop.org/mesa/drm'
+          sh "mkdir build"
+          sh 'PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/ sh autogen.sh --host=arm-linux-gnueabihf --enable-intel --prefix=$(pwd)/build/'
+          sh 'make -j$(nproc) V=1'
+          sh 'make -j$(nproc) install V=1'
+          sh 'tar cvfz libdrm-build.tar.gz build/'
+          stash includes: "libdrm-build.tar.gz", name: 'libdrm-build'
+        }
+
+        stage("Build igt for ${kernelci_arch}") {
+          git url: 'git://anongit.freedesktop.org/drm/igt-gpu-tools'
+          sh 'PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/:$(pwd)/../libdrm-build/lib/pkgconfig sh autogen.sh --host=arm-linux-gnueabihf'
+          sh 'make -j$(nproc) V=1'
+          sh 'tar cvfz igt-build.tar.gz tests/core_auth tests/core_get_client_auth tests/core_getclient tests/core_getstats tests/core_getversion tests/core_prop_blob tests/core_setmaster_vs_auth tests/drm_read tests/kms_addfb_basic tests/kms_atomic tests/kms_flip_event_leak tests/kms_setmode tests/kms_vblank tests/kms_frontbuffer_tracking tests/kms_flip tests/testdisplay'
+          stash includes: "igt-build.tar.gz", name: 'igt-build'
+        }
+      }
+    }
+  }
+}
+
+def stepsForParallel = [:]
+for (int i = 0; i < kernelci_arches.size(); i++) {
+    def s = kernelci_arches.get(i)
+    def buildStep = "Build image for ${s}"
+    stepsForParallel[buildStep] = makeImageStep(pipeline_version,
+                                                kernelci_arches.get(i),
+                                                debian_arches.get(i))
+    buildStep = "Build test suite for ${s}"
+    stepsForParallel[buildStep] = makeBuildStep(pipeline_version,
+                                                kernelci_arches.get(i),
+                                                debian_arches.get(i))
+}
+
+parallel stepsForParallel
