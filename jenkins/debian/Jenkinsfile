@@ -14,7 +14,7 @@ def makeImageStep(String pipeline_version, String kernelci_arch, String debian_a
         stage("Build base image for ${kernelci_arch}") {
           sh "mkdir -p ${pipeline_version}/${kernelci_arch}"
           sh "debos -t architecture:${debian_arch} -t basename:${pipeline_version}/${kernelci_arch} -t extra_packages:'libpciaccess0 libkmod2 libprocps6 libcairo2 libunwind8 libudev1' jenkins/debian/debos/stretch.yaml"
-          stash includes: "${pipeline_version}/${kernelci_arch}/rootfs.cpio.gz", name: 'rootfs'
+          stash includes: "${pipeline_version}/${kernelci_arch}/rootfs.cpio.gz", name: 'rootfs-${kernelci_arch}'
         }
       }
     }
@@ -38,7 +38,7 @@ def makeBuildStep(String pipeline_version, String kernelci_arch, String debian_a
               sh "make -j\$(nproc) V=1"
               sh "make -j\$(nproc) install V=1"
               sh "find -H build/ | cpio -H newc -v -o | gzip -c -c > libdrm.cpio.gz"
-              stash includes: "libdrm.cpio.gz", name: "libdrm-build"
+              stash includes: "libdrm.cpio.gz", name: "libdrm-${kernelci_arch}"
             }
           }
 
@@ -48,7 +48,7 @@ def makeBuildStep(String pipeline_version, String kernelci_arch, String debian_a
               sh "PKG_CONFIG_PATH=/usr/lib/${toolchain_arch}/pkgconfig/:\$(pwd)/../libdrm/build/lib/pkgconfig sh autogen.sh --host=${toolchain_arch}"
               sh "make -j\$(nproc) V=1"
               sh "echo tests/core_auth tests/core_get_client_auth tests/core_getclient tests/core_getstats tests/core_getversion tests/core_prop_blob tests/core_setmaster_vs_auth tests/drm_read tests/kms_addfb_basic tests/kms_atomic tests/kms_flip_event_leak tests/kms_setmode tests/kms_vblank tests/kms_frontbuffer_tracking tests/kms_flip tests/testdisplay | cpio -H newc -v -o | gzip -c - > igt.cpio.gz"
-              stash includes: "igt.cpio.gz", name: "igt-build"
+              stash includes: "igt.cpio.gz", name: "igt-${kernelci_arch}"
             }
           }
         }
@@ -74,13 +74,17 @@ for (int i = 0; i < kernelci_arches.size(); i++) {
 parallel stepsForParallel
 
 node {
-  stage("Adding test suite to image") {
-    unstash "rootfs"
-    unstash "libdrm-build"
-    unstash "igt-build"
-    sh 'cat libdrm.cpio.gz >> rootfs.cpio.gz'
-    sh 'cat igt.cpio.gz >> rootfs.cpio.gz'
-    archiveArtifacts artifacts: rootfs.cpio.gz
+  for (int i = 0; i < kernelci_arches.size(); i++) {
+    def arch = kernelci_arches.get(i)
+    stage("Adding test suite to image for ${arch}") {
+      unstash "rootfs-${arch}"
+      unstash "libdrm-${arch}"
+      unstash "igt-${arch}"
+      sh "mv rootfs.cpio.gz rootfs-${arch}.cpio.gz"
+      sh "cat libdrm.cpio.gz >> rootfs-${arch}.cpio.gz"
+      sh "cat igt.cpio.gz >> rootfs-${arch}.cpio.gz"
+      archiveArtifacts artifacts: rootfs-${arch}.cpio.gz
+    }
   }
 }
 
