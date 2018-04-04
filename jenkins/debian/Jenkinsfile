@@ -28,7 +28,7 @@ def makeBuildStep(String pipeline_version, String kernelci_arch, String debian_a
       }
 
       docker.build("debian", "-f jenkins/debian/Dockerfile_debian --pull .").inside("--device=/dev/kvm") {
-        dir("${PIPELINE_VERSION}") {
+        dir("${pipeline_version}") {
           dir("libdrm") {
             stage("Build libdrm for ${kernelci_arch}") {
               git url: 'git://anongit.freedesktop.org/mesa/drm'
