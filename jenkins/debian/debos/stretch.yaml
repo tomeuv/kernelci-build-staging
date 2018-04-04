@@ -72,5 +72,5 @@ actions:
   - action: run
     description: Create cpio archive
     chroot: false
-    command: cd ${ROOTDIR} ; find -H  |  cpio -H newc -v -o | gzip -c - > rootfs.cpio.gz
+    command: cd ${ROOTDIR} ; find -H  |  cpio -H newc -v -o | gzip -c - > ${ARTIFACTDIR}/rootfs.cpio.gz
 
