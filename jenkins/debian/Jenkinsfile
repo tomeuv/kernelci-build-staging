@@ -44,7 +44,7 @@ def makeBuildStep(String pipeline_version, String kernelci_arch, String debian_a
           dir("igt-gpu-tools") {
             stage("Build igt for ${kernelci_arch}") {
               git url: 'git://anongit.freedesktop.org/drm/igt-gpu-tools'
-              sh 'PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/:$(pwd)/../libdrm-build/lib/pkgconfig sh autogen.sh --host=arm-linux-gnueabihf'
+              sh 'PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig/:$(pwd)/../libdrm/build/lib/pkgconfig sh autogen.sh --host=arm-linux-gnueabihf'
               sh 'make -j$(nproc) V=1'
               sh 'tar cvfz igt-build.tar.gz tests/core_auth tests/core_get_client_auth tests/core_getclient tests/core_getstats tests/core_getversion tests/core_prop_blob tests/core_setmaster_vs_auth tests/drm_read tests/kms_addfb_basic tests/kms_atomic tests/kms_flip_event_leak tests/kms_setmode tests/kms_vblank tests/kms_frontbuffer_tracking tests/kms_flip tests/testdisplay'
               stash includes: "igt-build.tar.gz", name: 'igt-build'
