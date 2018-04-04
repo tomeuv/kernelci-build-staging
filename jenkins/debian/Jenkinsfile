@@ -13,8 +13,8 @@ def makeImageStep(String pipeline_version, String kernelci_arch, String debian_a
       docker.build("debian", "-f jenkins/debian/Dockerfile_debos --pull .").inside("--device=/dev/kvm") {
         stage("Build base image for ${kernelci_arch}") {
           sh "mkdir -p ${pipeline_version}/${kernelci_arch}"
-          sh "debos -t architecture:${debian_arch} -t basename:${pipeline_version}/${kernelci_arch} -t extra_packages:'libpciaccess0 libkmod2 libprocps6 libcairo2 libunwind8 libudev1' jenkins/debian/debos/stretch.yaml"
-          stash includes: "${pipeline_version}/${kernelci_arch}/rootfs.cpio.gz", name: "rootfs-${kernelci_arch}"
+          sh "debos -t architecture:${debian_arch} -t extra_packages:'libpciaccess0 libkmod2 libprocps6 libcairo2 libunwind8 libudev1' jenkins/debian/debos/stretch.yaml"
+          stash includes: "rootfs.cpio.gz", name: "rootfs-${kernelci_arch}"
         }
       }
     }

@@ -1,5 +1,4 @@
 {{- $architecture := or .architecture "arm64" -}}
-{{- $basename := or .basename "." -}}
 {{- $extra_packages := or .extra_packages "" -}}
 
 architecture: {{ $architecture }}
@@ -73,5 +72,5 @@ actions:
   - action: run
     description: Create cpio archive
     chroot: false
-    command: cd ${ROOTDIR} ; find -H  |  cpio -H newc -v -o | gzip -c - > ${ARTIFACTDIR}/{{ $basename -}}/rootfs.cpio.gz
+    command: cd ${ROOTDIR} ; find -H  |  cpio -H newc -v -o | gzip -c - > rootfs.cpio.gz
 
