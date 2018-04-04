@@ -16,5 +16,6 @@ RUN dpkg --add-architecture armhf && \
                        libtool \
                        libnss-wrapper \
                        python \
-                       python-requests
+                       python-requests \
+                       cpio
 
