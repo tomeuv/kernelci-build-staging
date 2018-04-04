@@ -1,5 +1,5 @@
 def pipeline_version = VersionNumber(versionNumberString: '${BUILD_DATE_FORMATTED,"yyyyMMdd"}.${BUILDS_TODAY_Z}')
-def kernelci_arches = ["armel"] //, "arm64", "x86", "x86_64"]
+def kernelci_arches = ["armel", "arm64", "x86", "x86_64"]
 def debian_arches = ["armhf", "arm64", "i386", "amd64"]
 def toolchain_arches = ["arm-linux-gnueabihf", "aarch64-linux-gnu", "i386-linux-gnu", "x86_64-linux-gnu"]
 
@@ -83,6 +83,7 @@ node {
       sh "mv rootfs.cpio.gz rootfs-${arch}.cpio.gz"
       sh "cat libdrm.cpio.gz >> rootfs-${arch}.cpio.gz"
       sh "cat igt.cpio.gz >> rootfs-${arch}.cpio.gz"
+      sh "mv rootfs-${arch}.cpio.gz rootfs-igt-${arch}.cpio.gz"
       archiveArtifacts artifacts: "rootfs-${arch}.cpio.gz", fingerprint: true
     }
   }
