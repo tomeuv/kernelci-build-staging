@@ -83,7 +83,7 @@ node {
       sh "mv rootfs.cpio.gz rootfs-${arch}.cpio.gz"
       sh "cat libdrm.cpio.gz >> rootfs-${arch}.cpio.gz"
       sh "cat igt.cpio.gz >> rootfs-${arch}.cpio.gz"
-      archiveArtifacts artifacts: rootfs-${arch}.cpio.gz
+      archiveArtifacts artifacts: "rootfs-${arch}.cpio.gz", fingerprint: true
     }
   }
 }
