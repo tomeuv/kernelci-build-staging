@@ -12,8 +12,10 @@ def makeImageStep(String pipeline_version, String kernelci_arch, String debian_a
 
       docker.build("debian", "-f jenkins/debian/Dockerfile_debos --pull .").inside("--device=/dev/kvm") {
         stage("Build base image for ${kernelci_arch}") {
-          sh "mkdir -p ${pipeline_version}/${kernelci_arch}"
-          sh "debos -t architecture:${debian_arch} -t extra_packages:'libpciaccess0 libkmod2 libprocps6 libcairo2 libunwind8 libudev1' jenkins/debian/debos/stretch.yaml"
+          sh """
+            mkdir -p ${pipeline_version}/${kernelci_arch}
+            debos -t architecture:${debian_arch} -t extra_packages:'libpciaccess0 libkmod2 libprocps6 libcairo2 libunwind8 libudev1' jenkins/debian/debos/stretch.yaml
+          """
           stash includes: "rootfs.cpio.gz", name: "rootfs-${kernelci_arch}"
         }
       }
@@ -33,11 +35,13 @@ def makeBuildStep(String pipeline_version, String kernelci_arch, String debian_a
           dir("libdrm") {
             stage("Build libdrm for ${kernelci_arch}") {
               git url: "git://anongit.freedesktop.org/mesa/drm"
-              sh "mkdir -p build"
-              sh "PKG_CONFIG_PATH=/usr/lib/${toolchain_arch}/pkgconfig/ sh autogen.sh --host=${toolchain_arch} --enable-intel --prefix=\$(pwd)/build/"
-              sh "make -j\$(nproc) V=1"
-              sh "make -j\$(nproc) install V=1"
-              sh "find -H build/ | cpio -H newc -v -o | gzip -c -c > libdrm.cpio.gz"
+              sh """
+                mkdir -p build
+                PKG_CONFIG_PATH=/usr/lib/${toolchain_arch}/pkgconfig/ sh autogen.sh --host=${toolchain_arch} --enable-intel --prefix=\$(pwd)/build/
+                make -j\$(nproc) V=1
+                make -j\$(nproc) install V=1
+                find -H build/ | cpio -H newc -v -o | gzip -c -c > libdrm.cpio.gz
+              """
               stash includes: "libdrm.cpio.gz", name: "libdrm-${kernelci_arch}"
             }
           }
@@ -45,9 +49,11 @@ def makeBuildStep(String pipeline_version, String kernelci_arch, String debian_a
           dir("igt-gpu-tools") {
             stage("Build igt for ${kernelci_arch}") {
               git url: "git://anongit.freedesktop.org/drm/igt-gpu-tools"
-              sh "PKG_CONFIG_PATH=/usr/lib/${toolchain_arch}/pkgconfig/:\$(pwd)/../libdrm/build/lib/pkgconfig sh autogen.sh --host=${toolchain_arch}"
-              sh "make -j\$(nproc) V=1"
-              sh "echo tests/core_auth tests/core_get_client_auth tests/core_getclient tests/core_getstats tests/core_getversion tests/core_prop_blob tests/core_setmaster_vs_auth tests/drm_read tests/kms_addfb_basic tests/kms_atomic tests/kms_flip_event_leak tests/kms_setmode tests/kms_vblank tests/kms_frontbuffer_tracking tests/kms_flip | cpio -H newc -v -o | gzip -c - > igt.cpio.gz"
+              sh """
+                PKG_CONFIG_PATH=/usr/lib/${toolchain_arch}/pkgconfig/:\$(pwd)/../libdrm/build/lib/pkgconfig sh autogen.sh --host=${toolchain_arch}
+                make -j\$(nproc) V=1
+                ls tests/core_auth tests/core_get_client_auth tests/core_getclient tests/core_getstats tests/core_getversion tests/core_prop_blob tests/core_setmaster_vs_auth tests/drm_read tests/kms_addfb_basic tests/kms_atomic tests/kms_flip_event_leak tests/kms_setmode tests/kms_vblank tests/kms_frontbuffer_tracking tests/kms_flip | cpio -H newc -v -o | gzip -c - > igt.cpio.gz
+              """
               stash includes: "igt.cpio.gz", name: "igt-${kernelci_arch}"
             }
           }
@@ -80,10 +86,11 @@ node {
       unstash "rootfs-${arch}"
       unstash "libdrm-${arch}"
       unstash "igt-${arch}"
-      sh "mv rootfs.cpio.gz rootfs-${arch}.cpio.gz"
-      sh "cat libdrm.cpio.gz >> rootfs-${arch}.cpio.gz"
-      sh "cat igt.cpio.gz >> rootfs-${arch}.cpio.gz"
-      sh "mv rootfs-${arch}.cpio.gz rootfs-igt-${arch}.cpio.gz"
+      sh """
+        cat libdrm.cpio.gz >> rootfs.cpio.gz
+        cat igt.cpio.gz >> rootfs.cpio.gz
+        mv rootfs.cpio.gz rootfs-igt-${arch}.cpio.gz
+      """
       archiveArtifacts artifacts: "rootfs-igt-${arch}.cpio.gz", fingerprint: true
     }
   }
