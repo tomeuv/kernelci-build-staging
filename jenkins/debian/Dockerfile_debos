@@ -1,5 +1,5 @@
 FROM docker-registry.collabora.com/debos:latest
 
 RUN apt-get update && \
-    apt-get install -y python python-requests
+    apt-get install --no-install-recommends -y python python-requests
 
