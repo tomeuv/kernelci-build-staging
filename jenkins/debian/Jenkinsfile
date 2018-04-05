@@ -92,9 +92,10 @@ node {
       unstash "libdrm-${arch}"
       unstash "igt-${arch}"
       sh """
-        cat libdrm.cpio.gz >> rootfs.cpio.gz
-        cat igt.cpio.gz >> rootfs.cpio.gz
-        mv rootfs.cpio.gz rootfs-igt-${arch}.cpio.gz
+        gunzip rootfs.cpio.gz
+        gunzip -c libdrm.cpio.gz >> rootfs.cpio
+        gunzip -c igt.cpio.gz >> rootfs.cpio
+        gzip -c rootfs.cpio > rootfs-igt-${arch}.cpio.gz
       """
       archiveArtifacts artifacts: "rootfs-igt-${arch}.cpio.gz", fingerprint: true
     }
