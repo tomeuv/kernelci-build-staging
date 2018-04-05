@@ -1,5 +1,5 @@
 def pipeline_version = VersionNumber(versionNumberString: '${BUILD_DATE_FORMATTED,"yyyyMMdd"}.${BUILDS_TODAY_Z}')
-def kernelci_arches = ["armel", "arm64", "x86", "x86_64"]
+def kernelci_arches = ["armel", "arm64"] //, "x86", "x86_64"]
 def debian_arches = ["armhf", "arm64", "i386", "amd64"]
 def toolchain_arches = ["arm-linux-gnueabihf", "aarch64-linux-gnu", "i386-linux-gnu", "x86_64-linux-gnu"]
 
@@ -28,12 +28,12 @@ def makeBuildStep(String pipeline_version, String kernelci_arch, String debian_a
         checkout scm
       }
 
-      docker.build("debian", "-f jenkins/debian/Dockerfile_debian --pull .").inside("--device=/dev/kvm") {
+      docker.build("debian", "-f jenkins/debian/Dockerfile_debian --pull --build-arg=\"DEBIAN_ARCH=${debian_arch}\" .").inside("--device=/dev/kvm") {
         dir("${pipeline_version}") {
           dir("libdrm") {
             stage("Build libdrm for ${kernelci_arch}") {
               git url: "git://anongit.freedesktop.org/mesa/drm"
-              sh "mkdir build"
+              sh "mkdir -p build"
               sh "PKG_CONFIG_PATH=/usr/lib/${toolchain_arch}/pkgconfig/ sh autogen.sh --host=${toolchain_arch} --enable-intel --prefix=\$(pwd)/build/"
               sh "make -j\$(nproc) V=1"
               sh "make -j\$(nproc) install V=1"
