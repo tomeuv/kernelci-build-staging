@@ -1,5 +1,5 @@
 def pipeline_version = VersionNumber(versionNumberString: '${BUILD_DATE_FORMATTED,"yyyyMMdd"}.${BUILDS_TODAY_Z}')
-def kernelci_arches = ["armel", "arm64"] //, "x86", "x86_64"]
+def kernelci_arches = ["armel"] //, "arm64"] //, "x86", "x86_64"]
 def debian_arches = ["armhf", "arm64", "i386", "amd64"]
 def toolchain_arches = ["arm-linux-gnueabihf", "aarch64-linux-gnu", "i386-linux-gnu", "x86_64-linux-gnu"]
 
@@ -17,6 +17,7 @@ def makeImageStep(String pipeline_version, String kernelci_arch, String debian_a
             debos -t architecture:${debian_arch} -t extra_packages:'libpciaccess0 libkmod2 libprocps6 libcairo2 libunwind8 libudev1' jenkins/debian/debos/stretch.yaml
           """
           stash includes: "rootfs.cpio.gz", name: "rootfs-${kernelci_arch}"
+          archiveArtifacts artifacts: "rootfs.cpio.gz", fingerprint: true
         }
       }
     }
@@ -43,6 +44,7 @@ def makeBuildStep(String pipeline_version, String kernelci_arch, String debian_a
                 find -H build/ | cpio -H newc -v -o | gzip -c -c > libdrm.cpio.gz
               """
               stash includes: "libdrm.cpio.gz", name: "libdrm-${kernelci_arch}"
+              archiveArtifacts artifacts: "libdrm.cpio.gz", fingerprint: true
             }
           }
 
@@ -55,6 +57,7 @@ def makeBuildStep(String pipeline_version, String kernelci_arch, String debian_a
                 ls tests/core_auth tests/core_get_client_auth tests/core_getclient tests/core_getstats tests/core_getversion tests/core_prop_blob tests/core_setmaster_vs_auth tests/drm_read tests/kms_addfb_basic tests/kms_atomic tests/kms_flip_event_leak tests/kms_setmode tests/kms_vblank tests/kms_frontbuffer_tracking tests/kms_flip | cpio -H newc -v -o | gzip -c - > igt.cpio.gz
               """
               stash includes: "igt.cpio.gz", name: "igt-${kernelci_arch}"
+              archiveArtifacts artifacts: "igt.cpio.gz", fingerprint: true
             }
           }
         }
