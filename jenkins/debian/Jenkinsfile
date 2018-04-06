@@ -103,7 +103,7 @@ node {
             find . | cpio --format=newc --verbose --create --append --file=../rootfs.cpio
           """
         }
-        sh "gzip -c rootfs.cpio.gz > rootfs-igt-${arch}.cpio.gz"
+        sh "gzip -c rootfs.cpio > rootfs-igt-${arch}.cpio.gz"
         archiveArtifacts artifacts: "rootfs-igt-${arch}.cpio.gz", fingerprint: true
       }
     }
