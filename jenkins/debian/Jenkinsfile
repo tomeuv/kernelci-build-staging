@@ -86,6 +86,7 @@ parallel stepsForParallel
 
 node {
   try {
+    sh "rm -rf *"
     sh "ls -l"
     for (int i = 0; i < kernelci_arches.size(); i++) {
       def arch = kernelci_arches.get(i)
