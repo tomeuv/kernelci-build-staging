@@ -54,10 +54,10 @@ def makeBuildStep(String pipeline_version, String kernelci_arch, String debian_a
               sh """
                 PKG_CONFIG_PATH=/usr/lib/${toolchain_arch}/pkgconfig/:\$(pwd)/../libdrm/usr/lib/pkgconfig sh autogen.sh --host=${toolchain_arch}
                 make -j\$(nproc) V=1
-                mkdir -p root # Copy to /root so it's in the right place when we add it to cpio
-                cp tests/core_auth tests/core_get_client_auth tests/core_getclient tests/core_getstats tests/core_getversion tests/core_prop_blob tests/core_setmaster_vs_auth tests/drm_read tests/kms_addfb_basic tests/kms_atomic tests/kms_flip_event_leak tests/kms_setmode tests/kms_vblank tests/kms_frontbuffer_tracking tests/kms_flip root/.
-                ${toolchain_arch}-strip root/*
-                ls root/* | cpio -H newc -v -o | gzip -c - > igt.cpio.gz
+                mkdir -p usr/bin
+                cp tests/core_auth tests/core_get_client_auth tests/core_getclient tests/core_getstats tests/core_getversion tests/core_prop_blob tests/core_setmaster_vs_auth tests/drm_read tests/kms_addfb_basic tests/kms_atomic tests/kms_flip_event_leak tests/kms_setmode tests/kms_vblank tests/kms_frontbuffer_tracking tests/kms_flip usr/bin/.
+                ${toolchain_arch}-strip usr/bin/*
+                find -H usr | cpio -H newc -v -o | gzip -c - > igt.cpio.gz
               """
               stash includes: "igt.cpio.gz", name: "igt-${kernelci_arch}"
               archiveArtifacts artifacts: "igt.cpio.gz", fingerprint: true
