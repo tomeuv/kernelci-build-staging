@@ -91,12 +91,14 @@ node {
       unstash "rootfs-${arch}"
       unstash "libdrm-${arch}"
       unstash "igt-${arch}"
-      sh """
-        gunzip rootfs.cpio.gz
-        gunzip -c libdrm.cpio.gz >> rootfs.cpio
-        gunzip -c igt.cpio.gz >> rootfs.cpio
-        gzip -c rootfs.cpio > rootfs-igt-${arch}.cpio.gz
-      """
+      dir("ramdisk") {
+        sh """
+          zcat ../rootfs.cpio.gz | cpio -iud
+          zcat ../libdrm.cpio.gz | cpio -iud
+          zcat ../igt.cpio.gz | cpio -iud
+          find . | cpio -H newc -v -o > ../rootfs-igt-${arch}.cpio.gz
+        """
+      }
       archiveArtifacts artifacts: "rootfs-igt-${arch}.cpio.gz", fingerprint: true
     }
   }
