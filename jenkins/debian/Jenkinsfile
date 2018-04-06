@@ -14,7 +14,7 @@ def makeImageStep(String pipeline_version, String kernelci_arch, String debian_a
         stage("Build base image for ${kernelci_arch}") {
           sh """
             mkdir -p ${pipeline_version}/${kernelci_arch}
-            debos -t architecture:${debian_arch} -t extra_packages:'libpciaccess0 libkmod2 libprocps6 libcairo2 libunwind8 libudev1' jenkins/debian/debos/stretch.yaml
+            debos -t architecture:${debian_arch} -t extra_packages:'libpciaccess0 libkmod2 libprocps6 libcairo2 libunwind8 libudev1 libglib2.0-0' jenkins/debian/debos/stretch.yaml
           """
           stash includes: "rootfs.cpio.gz", name: "rootfs-${kernelci_arch}"
           archiveArtifacts artifacts: "rootfs.cpio.gz", fingerprint: true
