@@ -37,6 +37,14 @@ actions:
     command: passwd root -d
 
   - action: overlay
+    description: Tell agetty to log automatically on the serial console
+    source: overlays/auto-login
+
+  - action: overlay
+    description: Change prompt to '$(cwd) # '
+    source: overlays/prompt
+
+  - action: overlay
     source: overlays/networkd
 
   - action: run
