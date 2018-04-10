@@ -39,7 +39,7 @@ def makeBuildStep(String pipeline_version, String kernelci_arch, String debian_a
               sh """
                 sh bootstrap.sh
                 mkdir install
-                PKG_CONFIG_PATH=/usr/lib/${toolchain_arch}/pkgconfig/ ./configure --host=${toolchain_arch} --prefix=\$(pwd)/install
+                PKG_CONFIG_PATH=/usr/lib/${toolchain_arch}/pkgconfig/ ./configure --host=${toolchain_arch} --prefix=\$(pwd)/install --with-udevdir=\$(pwd)/install/lib/udev
                 make -j\$(nproc) V=1
                 make V=1 install
                 find install
