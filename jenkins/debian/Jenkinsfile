@@ -41,7 +41,7 @@ def makeBuildStep(String pipeline_version, String kernelci_arch, String debian_a
                 mkdir install
                 PKG_CONFIG_PATH=/usr/lib/${toolchain_arch}/pkgconfig/ ./configure --host=${toolchain_arch} --prefix=\$(pwd)/install
                 make -j\$(nproc) V=1
-                make -j\$(nproc) V=1 install
+                make V=1 install
                 find install
                 #${toolchain_arch}-strip usr/bin/*
                 #find -H usr | cpio -H newc -v -o | gzip -c - > igt.cpio.gz
