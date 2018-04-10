@@ -43,8 +43,12 @@ def makeBuildStep(String pipeline_version, String kernelci_arch, String debian_a
                 make -j\$(nproc) V=1
                 make V=1 install
                 find install
-                #${toolchain_arch}-strip usr/bin/*
-                #find -H usr | cpio -H newc -v -o | gzip -c - > igt.cpio.gz
+                mkdir -p usr/bin usr/lib usr/lib/libv4l
+                cp install/bin/* install/sbin/* usr/bin/.
+                cp -rf install/lib/*.so* usr/lib/.
+                cp -rf install/lib/libv4l/*.so* usr/lib/libv4l/.
+                ${toolchain_arch}-strip usr/bin/* usr/lib/*.so* usr/lib/libv4l/*.so*
+                find -H usr | cpio -H newc -v -o | gzip -c - > v4l2-compliance.cpio.gz
               """
               stash includes: "v4l2-compliance.cpio.gz", name: "v4l2-compliance-${kernelci_arch}"
               archiveArtifacts artifacts: "v4l2-compliance.cpio.gz", fingerprint: true
