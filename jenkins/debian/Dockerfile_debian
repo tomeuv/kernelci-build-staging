@@ -21,6 +21,7 @@ RUN apt-get install --no-install-recommends -y libpciaccess-dev:$DEBIAN_ARCH \
                        autogen \
                        libtool \
                        automake \
+                       intltool \
                        python \
                        python-requests \
                        cpio
