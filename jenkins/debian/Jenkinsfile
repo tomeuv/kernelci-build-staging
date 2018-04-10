@@ -33,34 +33,21 @@ def makeBuildStep(String pipeline_version, String kernelci_arch, String debian_a
 
       docker.build("debian", "-f jenkins/debian/Dockerfile_debian --pull --build-arg=\"DEBIAN_ARCH=${debian_arch}\" .").inside("--device=/dev/kvm") {
         dir("${pipeline_version}") {
-          dir("libdrm") {
-            stage("Build libdrm for ${kernelci_arch}") {
-              git url: "git://anongit.freedesktop.org/mesa/drm"
+          dir("v4l2-compliance") {
+            stage("Build v4l2-compliance for ${kernelci_arch}") {
+              git url: "git://linuxtv.org/v4l-utils.git"
               sh """
-                mkdir -p usr # Build to usr so it's in the right place when we add it to cpio
-                PKG_CONFIG_PATH=/usr/lib/${toolchain_arch}/pkgconfig/ sh autogen.sh --host=${toolchain_arch} --enable-intel --prefix=\$(pwd)/usr/
+                sh bootstrap.sh
+                mkdir install
+                PKG_CONFIG_PATH=/usr/lib/${toolchain_arch}/pkgconfig/ ./configure --host=${toolchain_arch} --prefix=$(pwd)/install
                 make -j\$(nproc) V=1
-                make -j\$(nproc) install V=1
-                ls usr/lib/lib*.so* | cpio -H newc -v -o | gzip -c - > libdrm.cpio.gz
+                make -j\$(nproc) V=1 install
+                find install
+                #${toolchain_arch}-strip usr/bin/*
+                #find -H usr | cpio -H newc -v -o | gzip -c - > igt.cpio.gz
               """
-              stash includes: "libdrm.cpio.gz", name: "libdrm-${kernelci_arch}"
-              archiveArtifacts artifacts: "libdrm.cpio.gz", fingerprint: true
-            }
-          }
-
-          dir("igt-gpu-tools") {
-            stage("Build igt for ${kernelci_arch}") {
-              git url: "git://anongit.freedesktop.org/drm/igt-gpu-tools"
-              sh """
-                PKG_CONFIG_PATH=/usr/lib/${toolchain_arch}/pkgconfig/:\$(pwd)/../libdrm/usr/lib/pkgconfig sh autogen.sh --host=${toolchain_arch}
-                make -j\$(nproc) V=1
-                mkdir -p usr/bin
-                cp tests/core_auth tests/core_get_client_auth tests/core_getclient tests/core_getstats tests/core_getversion tests/core_prop_blob tests/core_setmaster_vs_auth tests/drm_read tests/kms_addfb_basic tests/kms_atomic tests/kms_flip_event_leak tests/kms_setmode tests/kms_vblank tests/kms_frontbuffer_tracking tests/kms_flip usr/bin/.
-                ${toolchain_arch}-strip usr/bin/*
-                find -H usr | cpio -H newc -v -o | gzip -c - > igt.cpio.gz
-              """
-              stash includes: "igt.cpio.gz", name: "igt-${kernelci_arch}"
-              archiveArtifacts artifacts: "igt.cpio.gz", fingerprint: true
+              stash includes: "v4l2-compliance.cpio.gz", name: "v4l2-compliance-${kernelci_arch}"
+              archiveArtifacts artifacts: "v4l2-compliance.cpio.gz", fingerprint: true
             }
           }
         }
@@ -73,9 +60,9 @@ def stepsForParallel = [:]
 for (int i = 0; i < kernelci_arches.size(); i++) {
     def s = kernelci_arches.get(i)
     def buildStep = "Build image for ${s}"
-    stepsForParallel[buildStep] = makeImageStep(pipeline_version,
+/*    stepsForParallel[buildStep] = makeImageStep(pipeline_version,
                                                 kernelci_arches.get(i),
-                                                debian_arches.get(i))
+                                                debian_arches.get(i))*/
     buildStep = "Build test suite for ${s}"
     stepsForParallel[buildStep] = makeBuildStep(pipeline_version,
                                                 kernelci_arches.get(i),
@@ -84,7 +71,7 @@ for (int i = 0; i < kernelci_arches.size(); i++) {
 }
 
 parallel stepsForParallel
-
+/*
 node {
   try {
     sh "rm -rf *"
@@ -111,3 +98,4 @@ node {
     deleteDir()
   }
 }
+*/
