@@ -64,9 +64,9 @@ def stepsForParallel = [:]
 for (int i = 0; i < kernelci_arches.size(); i++) {
     def s = kernelci_arches.get(i)
     def buildStep = "Build image for ${s}"
-/*    stepsForParallel[buildStep] = makeImageStep(pipeline_version,
+    stepsForParallel[buildStep] = makeImageStep(pipeline_version,
                                                 kernelci_arches.get(i),
-                                                debian_arches.get(i))*/
+                                                debian_arches.get(i))
     buildStep = "Build test suite for ${s}"
     stepsForParallel[buildStep] = makeBuildStep(pipeline_version,
                                                 kernelci_arches.get(i),
@@ -75,7 +75,7 @@ for (int i = 0; i < kernelci_arches.size(); i++) {
 }
 
 parallel stepsForParallel
-/*
+
 node {
   try {
     sh "rm -rf *"
@@ -84,22 +84,19 @@ node {
       def arch = kernelci_arches.get(i)
       stage("Adding test suite to image for ${arch}") {
         unstash "rootfs-${arch}"
-        unstash "libdrm-${arch}"
-        unstash "igt-${arch}"
+        unstash "v4l2-compliance-${arch}"
         sh "gunzip rootfs.cpio.gz"
         dir("ramdisk") {
           sh """
-            zcat ../libdrm.cpio.gz | cpio -iud
-            zcat ../igt.cpio.gz | cpio -iud
+            zcat ../v4l2-compliance.cpio.gz | cpio -iud
             find . | cpio --format=newc --verbose --create --append --file=../rootfs.cpio
           """
         }
-        sh "gzip -c rootfs.cpio > rootfs-igt-${arch}.cpio.gz"
-        archiveArtifacts artifacts: "rootfs-igt-${arch}.cpio.gz", fingerprint: true
+        sh "gzip -c rootfs.cpio > rootfs-v4l2-${arch}.cpio.gz"
+        archiveArtifacts artifacts: "rootfs-v4l2-${arch}.cpio.gz", fingerprint: true
       }
     }
   } finally {
     deleteDir()
   }
 }
-*/
